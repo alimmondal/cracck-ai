@@ -1,8 +1,11 @@
 const express = require("express");
+const cors = require('cors');
 const { GoogleGenAI } = require("@google/genai");
 // import {GoogleGenAI} from '@google/genai';
 const app = express();
 require("dotenv").config();
+app.use(cors());
+app.use(express.json())
 const port = process.env.PORT || 5000;
 
 app.use(express.urlencoded({extended:true}))
@@ -11,57 +14,7 @@ app.use(express.urlencoded({extended:true}))
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const ai = new GoogleGenAI({apiKey: GEMINI_API_KEY});
 
-// async function main() {
-//   const response = await ai.models.generateContent({
-//     model: 'gemini-2.0-flash-001',
-//     contents: 'Why is the sky blue?',
-//   });
-//   console.log(response.text);
-// }
 
-// main();
-
-const form = `
-<form method="POST" action="/prompt">
-<textarea name="prompt" id="prompt"></textarea>
-<button type="submit">Generate text</button>
-</form>
-
-`
-
-app.get("/prompt", async (req, res) => {
-  res.send(form)
-})
-app.post("/prompt", async (req, res) => {
-  const { prompt } = req.body;
-  try {
-    const result = await ai.models.generateContent({
-      model: 'gemini-2.0-flash-001',
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
-    });
-    // console.log(result)
-    const rawText = await result.candidates[0]?.content.parts[0]?.text || "No response found";
-    
-    const jsonMatch = rawText.match(/```json\s*([\s\S]*?)\s*```/);
-    const extractedJSON = jsonMatch ? jsonMatch[1] : null;
-
-    let formattedOutput;
-    if (extractedJSON) {
-      formattedOutput = `<pre>${extractedJSON}</pre>`;
-    } else {
-      formattedOutput= `<p>${rawText.replace(/\n/g, "<br>")}</p>`
-    }
-
-    res.send(`
-      <h2>Prompt:</h2><p>${prompt}</p>
-      <h2>Gemini Response:</h2><p>${formattedOutput}</p>
-      <button><a href="/prompt">Try again</a></button>
-    `);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Something went wrong!");
-  }
-});
 
 
 
