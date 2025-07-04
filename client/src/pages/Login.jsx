@@ -15,6 +15,7 @@ const Login = () => {
 
   const navigate = useNavigate();
   console.log(location);
+  
   const handleSubmit = (e) => {
     e.preventDefault();
     const form = e.target;
